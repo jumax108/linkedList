@@ -77,7 +77,7 @@ public:
 	}
 
 	inline CIterator end() {
-		return CIterator(_tail);
+		return CIterator(&_tail);
 	}
 
 	~CLinkedList();
@@ -93,11 +93,11 @@ private:
 template<typename T>
 CLinkedList<T>::CLinkedList(): _nodeFreeList(false, false){
 	
-	_head._parent = nullptr;
-	_head._child = &_tail;
+	_head._prev = nullptr;
+	_head._next = &_tail;
 
-	_tail._parent = &_head;
-	_tail._child = nullptr;
+	_tail._prev = &_head;
+	_tail._next = nullptr;
 }
 
 template<typename T>
@@ -115,11 +115,11 @@ bool CLinkedList<T>::insert(T value, CLinkedList<T>::CIterator& parent) {
 	stNode* node = _nodeFreeList.allocObject();
 
 	node->_value = value;
-	node->_parent = parent._node;
+	node->_prev = parent._node;
 
-	parent._node->_child->_parent = node;
-	node->_child = parent._node->_child;
-	parent._node->_child = node;
+	parent._node->_next->_prev = node;
+	node->_next = parent._node->_next;
+	parent._node->_next = node;
 	
 	return true;
 }
@@ -130,11 +130,11 @@ void CLinkedList<T>::push_front(const T value) {
 	stNode* node = _nodeFreeList.allocObject();
 
 	node->_value = value;
-	node->_parent = &_head;
-	node->_child = _head._child;
+	node->_prev = &_head;
+	node->_next = _head._next;
 
-	_head._child->_parent = node;
-	_head._child = node;
+	_head._next->_prev = node;
+	_head._next = node;
 }
 
 template<typename T>
@@ -143,11 +143,11 @@ void CLinkedList<T>::push_back(const T value) {
 	stNode* node = _nodeFreeList.allocObject();
 
 	node->_value = value;
-	node->_parent = _tail._parent;
-	node->_child = &_tail;
+	node->_prev = _tail._prev;
+	node->_next = &_tail;
 
-	_tail._parent->_child = node;
-	_tail._parent = node;
+	_tail._prev->_next = node;
+	_tail._prev = node;
 }
 
 template<typename T>
@@ -167,10 +167,10 @@ typename CLinkedList<T>::CIterator CLinkedList<T>::erase(
 		return end();
 	}
 
-	CLinkedList<T>::stNode* child = node->_child;
+	CLinkedList<T>::stNode* child = node->_next;
 
-	node->_child->_parent = node->_parent;
-	node->_parent->_child = node->_child;
+	node->_next->_prev = node->_prev;
+	node->_prev->_next = node->_next;
 
 	CIterator nextIter = ++iter;
 
@@ -216,12 +216,12 @@ CLinkedList<T>::CIterator::CIterator(const stNode* node) {
 template <typename T>
 typename CLinkedList<T>::CIterator& CLinkedList<T>::CIterator::operator=(const stNode& node) {
 	_node->operator=(node);
-	return this;
+	return *this;
 }
 template <typename T>
 typename CLinkedList<T>::CIterator& CLinkedList<T>::CIterator::operator=(const CIterator& iter) {
-	_node->operator=(iter._node);
-	return this;
+	_node->operator=(*iter._node);
+	return *this;
 }
 
 template <typename T>
@@ -231,13 +231,13 @@ T& CLinkedList<T>::CIterator::operator*() {
 
 template <typename T>
 typename CLinkedList<T>::CIterator& CLinkedList<T>::CIterator::operator++() {
-	_node = _node->_child;
+	_node = _node->_next;
 	return *this;
 }
 
 template <typename T>
 typename CLinkedList<T>::CIterator& CLinkedList<T>::CIterator::operator--() {
-	_node = _node->_parent;
+	_node = _node->_prev;
 	return *this;
 }
 
