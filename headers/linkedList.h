@@ -31,16 +31,16 @@ public:
 		CIterator(const stNode* node);
 
 		inline CIterator& operator=(const stNode& node);
-		inline CIterator& operator=(const CIterator& node);
+		inline CIterator& operator=(const CIterator& iter);
 		inline T& operator*();
 
 		inline CIterator& operator++();
 		inline CIterator& operator--();
 
-		inline bool operator!=(const stNode* node);
-		inline bool operator==(const stNode* node);
+		inline bool operator!=(const CIterator& iter);
+		inline bool operator==(const CIterator& iter);
 
-		inline T operator->() {
+		inline T& operator->() {
 			return _node->_value;
 		}
 
@@ -61,9 +61,9 @@ public:
 		const T value // 저장할 값
 	);
 
-	void insert(
+	bool insert(
 		const T value, // 값을 저장할 데이터
-		stNode* parent  // 이 노드의 자식으로 저장됩니다.
+		CIterator& prev  // 이 노드의 다음 노드로 저장됩니다.
 	);
 
 	CIterator erase(
@@ -106,18 +106,22 @@ CLinkedList<T>::~CLinkedList() {
 }
 
 template<typename T>
-void CLinkedList<T>::insert(T value, CLinkedList<T>::stNode* parent) {
+bool CLinkedList<T>::insert(T value, CLinkedList<T>::CIterator& parent) {
 
-	//stNode* node = (CLinkedList<T>::stNode*)malloc(sizeof(CLinkedList<T>::stNode));
+	if (parent._node == nullptr) {
+		return false;
+	}
+
 	stNode* node = _nodeFreeList.allocObject();
 
 	node->_value = value;
-	node->_parent = parent;
+	node->_parent = parent._node;
 
-	parent->_child->_parent = node;
-	node->_child = parent->_child;
-	parent->_child = node;
+	parent._node->_child->_parent = node;
+	node->_child = parent._node->_child;
+	parent._node->_child = node;
 	
+	return true;
 }
 
 template<typename T>
@@ -238,11 +242,11 @@ typename CLinkedList<T>::CIterator& CLinkedList<T>::CIterator::operator--() {
 }
 
 template <typename T>
-bool CLinkedList<T>::CIterator::operator!=(const stNode* node) {
-	return *(this->_node) != *node;
+bool CLinkedList<T>::CIterator::operator!=(const CIterator& iter) {
+	return !this->operator==(iter);
 }
 
 template <typename T>
-bool CLinkedList<T>::CIterator::operator==(const stNode* node) {
-	return *(this->_node) == *node;
+bool CLinkedList<T>::CIterator::operator==(const CIterator& iter) {
+	return *(this->_node) == *iter._node;
 }
