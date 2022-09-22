@@ -22,7 +22,7 @@
 		 > 첫번째 노드의 iterator 전달
 	 - CIterator end()
 		 > 마지막 노드의 iterator 전달
-- class CIterator
+- class CLinkedList<T>::CIterator
 	-  CIterator& operator=(stNode&)
 	    CIterator& operator=(CIterator&)
 	    > 전달 받은 데이터로 클래스 초기화
